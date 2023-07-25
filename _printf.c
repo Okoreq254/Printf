@@ -16,9 +16,9 @@
  *   - b:    Binary numbers
  *   - u:    Unsigned numbers
  *   - %:    '%' char
- *   *    - r:    Reverse string
+ *   - r:    Reverse string
  *   - R:    Root13 of the string
- *   The function considerate the next arguments, checking the usability fore
+ *   The function considerate the next arguments, checking the usability for
  *   conversion specifier used:
  *   (+)      Adds a '+' sign to positive integers
  *   ( )      Adds a ' ' to the start of the number
@@ -39,39 +39,38 @@ int _printf(const char *format, ...)
 	char *buffer, *str;
 	int i = 0, i_buffer = 0, j_spec, lenstr, stock = 0;
 
-	buffer = malloc(BUFFER_SIZE);
+	buffer = malloc(1024);
 	if (buffer == NULL)
 		return (-1);
-
 	va_start(list, format);
 	while (format && format[i])
 	{
 		if (format[i] == '%')
 		{
-			if (format[i + 1] == '%')
+			if (check_specs(format + i, &j_spec) == 1
+					&& check_format(format + i, j_spec))
 			{
-				_memcpy(buffer, format + i, &i_buffer, &stock, 1);
-				i += 2;
+				str = generate_malloc(format + i, j_spec, list, &lenstr);
+				lenstr = format[i + j_spec - 1] == 'c' ? lenstr : _strlen(str);
+				if (str == NULL)
+					return (free_buffer(buffer, i_buffer));
+				_memcpy(buffer, str, &i_buffer, &stock, lenstr), free(str);
+				i += j_spec;
 				continue;
 			}
-			_memcpy(buffer, format + i, &i_buffer, &stock, 1);
-			i++;
+			if (check_specs(format + i, &j_spec) == -1)
+				return (free_buffer(buffer, i_buffer));
+			if (format[i + 1] == 'h' || format[i + 1] == 'l')
+				_memcpy(buffer, format + i, &i_buffer, &stock, 1), j_spec = 2;
+			else
+				_memcpy(buffer, format + i, &i_buffer, &stock, j_spec);
+			i += j_spec;
+			continue;
 		}
-		else
-		{
-			_memcpy(buffer, format + i, &i_buffer, &stock, 1);
-			i++;
-		}
+		_memcpy(buffer, format + i, &i_buffer, &stock, 1), i++;
 	}
-	va_end(list);
-	if (i_buffer > 0)
-	{
-		stock += i_buffer;
-		write(1, buffer, i_buffer);
-	}
-
-	free(buffer);
-	return (i == 0 && !format ? -1 : stock);
+	va_end(list), i_buffer = write(1, buffer, i_buffer), free(buffer);
+	return (i == 0 && !format ? -1 : stock + i_buffer);
 }
 
 /**
@@ -184,4 +183,3 @@ int free_buffer(char *buff, int len)
 	free(buff);
 	return (-1);
 }
-
