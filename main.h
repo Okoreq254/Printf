@@ -1,8 +1,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <stdarg.h>
 #include <unistd.h>
 
 /**
@@ -32,6 +34,7 @@ typedef struct Specs_t
 int _printf(const char *format, ...);
 
 /* Auxiliar functions */
+int _putchar(char c);
 int _strlen(char *s);
 int blen(unsigned long int n, unsigned long int base);
 int blen10(long int n, long int base);
